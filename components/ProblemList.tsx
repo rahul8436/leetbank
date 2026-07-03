@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ProblemMeta } from "@/lib/types";
 import { useApp } from "@/lib/store";
+import { formatAskedShort } from "@/lib/utils";
 import DifficultyBadge from "./DifficultyBadge";
 
 export default function ProblemList({ items }: { items: ProblemMeta[] }) {
@@ -46,7 +47,16 @@ export default function ProblemList({ items }: { items: ProblemMeta[] }) {
                   {p.company && (
                     <span className="rounded-md bg-elevated px-1.5 py-0.5 text-fg-soft">{p.company}</span>
                   )}
-                  {p.round && <span className="hidden sm:inline">{p.round}</span>}
+                  {p.askedDate && (
+                    <span className="inline-flex items-center gap-1" title={`Asked ${formatAskedShort(p.askedDate)}`}>
+                      <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <path d="M16 2v4M8 2v4M3 10h18" />
+                      </svg>
+                      {formatAskedShort(p.askedDate)}
+                    </span>
+                  )}
+                  {p.round && <span className="hidden sm:inline">· {p.round}</span>}
                 </div>
               </div>
               {entry?.starred && (

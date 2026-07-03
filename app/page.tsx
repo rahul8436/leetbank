@@ -1,7 +1,10 @@
-import { metaList, companies, topics, stats } from "@/lib/problems";
+import { metaList, companies, topics, stats, monthList, askedRange } from "@/lib/problems";
+import { formatAskedShort } from "@/lib/utils";
 import ProblemBrowser from "@/components/ProblemBrowser";
 
 export default function HomePage() {
+  const from = formatAskedShort(askedRange.earliest);
+  const to = formatAskedShort(askedRange.latest);
   return (
     <div className="mx-auto max-w-content px-4 py-8 sm:px-6 sm:py-12">
       <section className="mb-8 sm:mb-10">
@@ -13,6 +16,15 @@ export default function HomePage() {
           worked examples, complexity analysis, and full solutions in multiple
           languages.
         </p>
+        {from && to && (
+          <p className="mt-2 flex items-center gap-1.5 text-sm text-muted">
+            <svg className="h-4 w-4 text-accent-soft" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" />
+              <path d="M16 2v4M8 2v4M3 10h18" />
+            </svg>
+            Sourced from interviews {from === to ? `in ${from}` : `between ${from} and ${to}`}.
+          </p>
+        )}
 
         <div className="mt-6 flex flex-wrap gap-2 text-sm">
           <Stat label="Total" value={stats.total} tone="accent" />
@@ -22,7 +34,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <ProblemBrowser problems={metaList} companies={companies} topics={topics} />
+      <ProblemBrowser problems={metaList} companies={companies} topics={topics} months={monthList} />
     </div>
   );
 }

@@ -67,4 +67,5 @@ export interface ProblemMeta {
   role: string;
   round: string;
   topics: string[];
+  askedDate: string;
 }

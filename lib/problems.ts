@@ -1,6 +1,6 @@
 import raw from "@/data/problems.json";
 import type { Problem, ProblemWithKey, ProblemMeta } from "./types";
-import { DIFFICULTY_ORDER } from "./utils";
+import { DIFFICULTY_ORDER, askedMonthKey, formatMonthLong } from "./utils";
 
 function num(p: Problem): number {
   return parseInt(String(p.problem_number), 10) || 0;
@@ -100,6 +100,7 @@ export const metaList: ProblemMeta[] = problems.map((p) => ({
   role: p._list?.role_display ?? p._list?.role ?? "",
   round: p._list?.round_display ?? p._list?.round ?? "",
   topics: canonicalTopics(p.explanation?.key_concepts ?? []),
+  askedDate: p._list?.asked_date ?? "",
 }));
 
 export const stats = {
@@ -108,6 +109,31 @@ export const stats = {
   medium: metaList.filter((m) => m.difficulty === "Medium").length,
   hard: metaList.filter((m) => m.difficulty === "Hard").length,
 };
+
+export interface MonthInfo {
+  key: string; // "2025-11"
+  label: string; // "November 2025"
+  count: number;
+}
+
+/** Months that appear in asked_date, newest first, with problem counts. */
+export const monthList: MonthInfo[] = (() => {
+  const counts: Record<string, number> = {};
+  for (const m of metaList) {
+    const k = askedMonthKey(m.askedDate);
+    if (k) counts[k] = (counts[k] ?? 0) + 1;
+  }
+  return Object.keys(counts)
+    .sort()
+    .reverse()
+    .map((key) => ({ key, label: formatMonthLong(key), count: counts[key] }));
+})();
+
+/** Earliest / latest asked_date across the bank (both "YYYY-MM-DD"). */
+export const askedRange: { earliest: string; latest: string } = (() => {
+  const dates = metaList.map((m) => m.askedDate).filter(Boolean).sort();
+  return { earliest: dates[0] ?? "", latest: dates[dates.length - 1] ?? "" };
+})();
 
 function memberOf(m: ProblemMeta, name: string): boolean {
   return m.company === name || m.companies.includes(name);

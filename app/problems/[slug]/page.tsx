@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProblem, neighbors, allKeys, topicsFor, slugifyCompany } from "@/lib/problems";
+import { formatAskedLong } from "@/lib/utils";
 import DifficultyBadge from "@/components/DifficultyBadge";
 import CompanyLogo from "@/components/CompanyLogo";
 import Markdown from "@/components/Markdown";
@@ -82,7 +83,15 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
           <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
             {meta?.role && <span>{meta.role_display ?? meta.role}</span>}
             {meta?.round && <span>{meta.round_display ?? meta.round}</span>}
-            {meta?.asked_date && <span>Asked {meta.asked_date}</span>}
+            {meta?.asked_date && (
+              <span className="inline-flex items-center gap-1">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" />
+                  <path d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+                Asked {formatAskedLong(meta.asked_date)}
+              </span>
+            )}
           </div>
         )}
         <div className="mt-4">

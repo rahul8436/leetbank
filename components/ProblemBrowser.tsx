@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { ProblemMeta } from "@/lib/types";
+import type { MonthInfo } from "@/lib/problems";
+import { askedMonthKey } from "@/lib/utils";
 import { useApp } from "@/lib/store";
 import ProblemList from "./ProblemList";
 
@@ -9,15 +11,23 @@ const DIFFS = ["All", "Easy", "Medium", "Hard"] as const;
 type Diff = (typeof DIFFS)[number];
 const STATUSES = ["All", "Unsolved", "Solved", "Starred"] as const;
 type StatusFilter = (typeof STATUSES)[number];
+const SORTS = [
+  { value: "number", label: "Sort: Number" },
+  { value: "newest", label: "Sort: Recently asked" },
+  { value: "oldest", label: "Sort: Oldest asked" },
+] as const;
+type Sort = (typeof SORTS)[number]["value"];
 
 export default function ProblemBrowser({
   problems,
   companies,
   topics,
+  months,
 }: {
   problems: ProblemMeta[];
   companies: string[];
   topics: string[];
+  months: MonthInfo[];
 }) {
   const { progress, username, ready } = useApp();
   const [query, setQuery] = useState("");
@@ -25,13 +35,16 @@ export default function ProblemBrowser({
   const [company, setCompany] = useState("All");
   const [topic, setTopic] = useState("All");
   const [status, setStatus] = useState<StatusFilter>("All");
+  const [month, setMonth] = useState("All");
+  const [sort, setSort] = useState<Sort>("number");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return problems.filter((p) => {
+    const out = problems.filter((p) => {
       if (difficulty !== "All" && p.difficulty !== difficulty) return false;
       if (company !== "All" && !p.companies.includes(company) && p.company !== company) return false;
       if (topic !== "All" && !p.topics.includes(topic)) return false;
+      if (month !== "All" && askedMonthKey(p.askedDate) !== month) return false;
       if (status !== "All") {
         const e = progress[p.slug];
         if (status === "Solved" && e?.status !== "solved") return false;
@@ -46,10 +59,21 @@ export default function ProblemBrowser({
         p.companies.some((c) => c.toLowerCase().includes(q))
       );
     });
-  }, [problems, query, difficulty, company, topic, status, progress]);
+    if (sort !== "number") {
+      const dir = sort === "newest" ? -1 : 1;
+      out.sort((a, b) => dir * a.askedDate.localeCompare(b.askedDate) || a.number - b.number);
+    }
+    return out;
+  }, [problems, query, difficulty, company, topic, month, status, sort, progress]);
 
   const active =
-    difficulty !== "All" || company !== "All" || topic !== "All" || status !== "All" || query.trim() !== "";
+    difficulty !== "All" ||
+    company !== "All" ||
+    topic !== "All" ||
+    status !== "All" ||
+    month !== "All" ||
+    sort !== "number" ||
+    query.trim() !== "";
 
   return (
     <div>
@@ -130,6 +154,20 @@ export default function ProblemBrowser({
             </select>
 
             <select
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+              className="rounded-xl border border-border bg-elevated px-3 py-2 text-sm text-fg outline-none transition focus:border-accent/60"
+              title="Filter by when the question was asked"
+            >
+              <option value="All">Any month</option>
+              {months.map((m) => (
+                <option key={m.key} value={m.key}>
+                  {m.label} ({m.count})
+                </option>
+              ))}
+            </select>
+
+            <select
               value={status}
               onChange={(e) => setStatus(e.target.value as StatusFilter)}
               disabled={!ready}
@@ -143,6 +181,19 @@ export default function ProblemBrowser({
               ))}
             </select>
 
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as Sort)}
+              className="rounded-xl border border-border bg-elevated px-3 py-2 text-sm text-fg outline-none transition focus:border-accent/60"
+              title="Order the results"
+            >
+              {SORTS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+
             {active && (
               <button
                 onClick={() => {
@@ -151,6 +202,8 @@ export default function ProblemBrowser({
                   setCompany("All");
                   setTopic("All");
                   setStatus("All");
+                  setMonth("All");
+                  setSort("number");
                 }}
                 className="rounded-xl border border-border px-3 py-2 text-sm text-muted transition hover:border-accent/50 hover:text-fg"
               >
