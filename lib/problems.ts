@@ -10,13 +10,20 @@ const all: Problem[] = (raw as unknown as Problem[])
   .slice()
   .sort((a, b) => num(a) - num(b));
 
-// Slugs are mostly unique; disambiguate the few collisions with the number.
-const slugCounts: Record<string, number> = {};
-for (const p of all) slugCounts[p.slug] = (slugCounts[p.slug] ?? 0) + 1;
+// Raw slugs can contain URL-unsafe characters (? ( ) ' ) and stray/double
+// hyphens that break routing, so sanitize into a safe slug. Already-clean slugs
+// are unchanged. Then disambiguate the few collisions with the problem number.
+function safeSlug(s: string): string {
+  return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
 
-export const problems: ProblemWithKey[] = all.map((p) => ({
+const safeSlugs = all.map((p) => safeSlug(p.slug));
+const slugCounts: Record<string, number> = {};
+for (const s of safeSlugs) slugCounts[s] = (slugCounts[s] ?? 0) + 1;
+
+export const problems: ProblemWithKey[] = all.map((p, i) => ({
   ...p,
-  key: slugCounts[p.slug] > 1 ? `${p.slug}-${num(p)}` : p.slug,
+  key: slugCounts[safeSlugs[i]] > 1 ? `${safeSlugs[i]}-${num(p)}` : safeSlugs[i],
 }));
 
 const byKey = new Map(problems.map((p) => [p.key, p]));
