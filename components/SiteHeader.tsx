@@ -8,6 +8,7 @@ import UsernameModal from "./UsernameModal";
 
 const NAV = [
   { href: "/", label: "Problems", match: (p: string) => p === "/" || p.startsWith("/problems") },
+  { href: "/topics", label: "Topics", match: (p: string) => p.startsWith("/topics") },
   { href: "/companies", label: "Companies", match: (p: string) => p.startsWith("/companies") },
   { href: "/dashboard", label: "Dashboard", match: (p: string) => p.startsWith("/dashboard") },
 ];
@@ -220,6 +221,12 @@ function BottomIcon({ label, active }: { label: string; active: boolean }) {
     return (
       <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth="2">
         <path d="M4 6h16M4 12h16M4 18h10" />
+      </svg>
+    );
+  if (label === "Topics")
+    return (
+      <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M7.5 7.5h.01M3 3h7l11 11-7 7L3 10z" />
       </svg>
     );
   if (label === "Companies")

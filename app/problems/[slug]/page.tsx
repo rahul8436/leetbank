@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getProblem, neighbors, allKeys } from "@/lib/problems";
+import { getProblem, neighbors, allKeys, topicsFor, slugifyCompany } from "@/lib/problems";
 import DifficultyBadge from "@/components/DifficultyBadge";
 import Markdown from "@/components/Markdown";
 import Examples from "@/components/Examples";
@@ -35,6 +35,7 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
   const ex = p.explanation;
   const meta = p._list;
   const companies = p.companies ?? [];
+  const topics = topicsFor(p.key);
 
   const sections: { id: string; label: string }[] = [
     p.description && { id: "description", label: "Description" },
@@ -85,6 +86,20 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
         <div className="mt-4">
           <ProblemActions problemKey={p.key} />
         </div>
+        {topics.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted">Topics</span>
+            {topics.map((t) => (
+              <Link
+                key={t}
+                href={`/topics/${slugifyCompany(t)}`}
+                className="rounded-full border border-border bg-surface/60 px-2.5 py-0.5 text-xs text-fg-soft transition hover:border-accent/50 hover:text-accent-soft"
+              >
+                {t}
+              </Link>
+            ))}
+          </div>
+        )}
       </header>
 
       <div className="mt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_16rem] lg:gap-10">

@@ -40,6 +40,48 @@ export function neighbors(key: string): {
   };
 }
 
+// Canonical algorithm topics, matched from each problem's noisy key_concepts by
+// substring. A concept can map to several topics; unmatched concepts are ignored.
+const TOPIC_DEFS: { name: string; aliases: string[] }[] = [
+  { name: "Dynamic Programming", aliases: ["dynamic programming", "memoization", "tabulation"] },
+  { name: "Hash Table", aliases: ["hash"] },
+  { name: "Array", aliases: ["array"] },
+  { name: "String", aliases: ["string"] },
+  { name: "Two Pointers", aliases: ["two pointer"] },
+  { name: "Sliding Window", aliases: ["sliding window"] },
+  { name: "Binary Search", aliases: ["binary search"] },
+  { name: "DFS", aliases: ["dfs", "depth-first", "depth first"] },
+  { name: "BFS", aliases: ["bfs", "breadth-first", "breadth first"] },
+  { name: "Graph", aliases: ["graph"] },
+  { name: "Tree", aliases: ["tree"] },
+  { name: "Heap", aliases: ["heap", "priority queue"] },
+  { name: "Stack", aliases: ["stack"] },
+  { name: "Queue", aliases: ["queue"] },
+  { name: "Greedy", aliases: ["greedy"] },
+  { name: "Backtracking", aliases: ["backtrack"] },
+  { name: "Recursion", aliases: ["recursion", "recursive"] },
+  { name: "Sorting", aliases: ["sort"] },
+  { name: "Math", aliases: ["math", "arithmetic", "number theory"] },
+  { name: "Bit Manipulation", aliases: ["bit manipulation", "bitwise", "bitmask"] },
+  { name: "Linked List", aliases: ["linked list"] },
+  { name: "Matrix", aliases: ["matrix", "grid"] },
+  { name: "Simulation", aliases: ["simulation"] },
+  { name: "Design", aliases: ["design"] },
+  { name: "Trie", aliases: ["trie"] },
+  { name: "Union Find", aliases: ["union find", "disjoint set"] },
+  { name: "Prefix Sum", aliases: ["prefix sum"] },
+  { name: "Intervals", aliases: ["interval"] },
+];
+
+function canonicalTopics(concepts: string[]): string[] {
+  const lc = concepts.map((c) => c.toLowerCase());
+  const out: string[] = [];
+  for (const t of TOPIC_DEFS) {
+    if (t.aliases.some((a) => lc.some((c) => c.includes(a)))) out.push(t.name);
+  }
+  return out;
+}
+
 /** Small metadata list for the searchable browser (keeps client payload light). */
 export const metaList: ProblemMeta[] = problems.map((p) => ({
   number: num(p),
@@ -50,6 +92,7 @@ export const metaList: ProblemMeta[] = problems.map((p) => ({
   companies: p.companies ?? [],
   role: p._list?.role_display ?? p._list?.role ?? "",
   round: p._list?.round_display ?? p._list?.round ?? "",
+  topics: canonicalTopics(p.explanation?.key_concepts ?? []),
 }));
 
 export const stats = {
@@ -98,6 +141,35 @@ export function companyBySlug(slug: string): CompanyInfo | undefined {
 
 export function problemsForCompany(name: string): ProblemMeta[] {
   return metaList.filter((m) => memberOf(m, name));
+}
+
+export interface TopicInfo {
+  name: string;
+  slug: string;
+  count: number;
+}
+
+export const topicList: TopicInfo[] = (() => {
+  const counts: Record<string, number> = {};
+  for (const m of metaList) for (const t of m.topics) counts[t] = (counts[t] ?? 0) + 1;
+  return TOPIC_DEFS.map((t) => t.name)
+    .filter((n) => counts[n])
+    .map((name) => ({ name, slug: slugifyCompany(name), count: counts[name] }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+})();
+
+export const topics: string[] = topicList.map((t) => t.name);
+
+export function topicBySlug(slug: string): TopicInfo | undefined {
+  return topicList.find((t) => t.slug === slug);
+}
+
+export function problemsForTopic(name: string): ProblemMeta[] {
+  return metaList.filter((m) => m.topics.includes(name));
+}
+
+export function topicsFor(key: string): string[] {
+  return metaList.find((m) => m.slug === key)?.topics ?? [];
 }
 
 export { DIFFICULTY_ORDER };

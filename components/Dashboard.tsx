@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ProblemMeta } from "@/lib/types";
 import { useApp } from "@/lib/store";
 import ProblemList from "./ProblemList";
+import ProgressTools from "./ProgressTools";
 
 export default function Dashboard({ problems }: { problems: ProblemMeta[] }) {
   const { username, progress, ready } = useApp();
@@ -112,6 +113,10 @@ export default function Dashboard({ problems }: { problems: ProblemMeta[] }) {
           {data.solved.length > 0 && <ListSection title="✅ Solved" items={data.solved} />}
         </div>
       )}
+
+      <div className="mt-8">
+        <ProgressTools />
+      </div>
     </div>
   );
 }

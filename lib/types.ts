@@ -66,4 +66,5 @@ export interface ProblemMeta {
   companies: string[];
   role: string;
   round: string;
+  topics: string[];
 }

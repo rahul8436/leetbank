@@ -1,4 +1,4 @@
-import { metaList, companies, stats } from "@/lib/problems";
+import { metaList, companies, topics, stats } from "@/lib/problems";
 import ProblemBrowser from "@/components/ProblemBrowser";
 
 export default function HomePage() {
@@ -22,7 +22,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <ProblemBrowser problems={metaList} companies={companies} />
+      <ProblemBrowser problems={metaList} companies={companies} topics={topics} />
     </div>
   );
 }

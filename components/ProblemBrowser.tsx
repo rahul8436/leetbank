@@ -13,14 +13,17 @@ type StatusFilter = (typeof STATUSES)[number];
 export default function ProblemBrowser({
   problems,
   companies,
+  topics,
 }: {
   problems: ProblemMeta[];
   companies: string[];
+  topics: string[];
 }) {
   const { progress, username, ready } = useApp();
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState<Diff>("All");
   const [company, setCompany] = useState("All");
+  const [topic, setTopic] = useState("All");
   const [status, setStatus] = useState<StatusFilter>("All");
 
   const filtered = useMemo(() => {
@@ -28,6 +31,7 @@ export default function ProblemBrowser({
     return problems.filter((p) => {
       if (difficulty !== "All" && p.difficulty !== difficulty) return false;
       if (company !== "All" && !p.companies.includes(company) && p.company !== company) return false;
+      if (topic !== "All" && !p.topics.includes(topic)) return false;
       if (status !== "All") {
         const e = progress[p.slug];
         if (status === "Solved" && e?.status !== "solved") return false;
@@ -42,9 +46,10 @@ export default function ProblemBrowser({
         p.companies.some((c) => c.toLowerCase().includes(q))
       );
     });
-  }, [problems, query, difficulty, company, status, progress]);
+  }, [problems, query, difficulty, company, topic, status, progress]);
 
-  const active = difficulty !== "All" || company !== "All" || status !== "All" || query.trim() !== "";
+  const active =
+    difficulty !== "All" || company !== "All" || topic !== "All" || status !== "All" || query.trim() !== "";
 
   return (
     <div>
@@ -99,6 +104,19 @@ export default function ProblemBrowser({
             </div>
 
             <select
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              className="rounded-xl border border-border bg-elevated px-3 py-2 text-sm text-fg outline-none transition focus:border-accent/60"
+            >
+              <option value="All">All topics</option>
+              {topics.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+
+            <select
               value={company}
               onChange={(e) => setCompany(e.target.value)}
               className="rounded-xl border border-border bg-elevated px-3 py-2 text-sm text-fg outline-none transition focus:border-accent/60"
@@ -131,6 +149,7 @@ export default function ProblemBrowser({
                   setQuery("");
                   setDifficulty("All");
                   setCompany("All");
+                  setTopic("All");
                   setStatus("All");
                 }}
                 className="rounded-xl border border-border px-3 py-2 text-sm text-muted transition hover:border-accent/50 hover:text-fg"

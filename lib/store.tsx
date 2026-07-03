@@ -32,6 +32,47 @@ interface AppState {
   progress: Progress;
   setStatus: (key: string, status: Status | null) => void;
   toggleStar: (key: string) => void;
+  exportData: () => string;
+  importData: (text: string, mode: "merge" | "replace") => { ok: boolean; count: number; error?: string };
+  resetProgress: () => void;
+}
+
+function mergeProgress(a: Progress, b: Progress): Progress {
+  const out: Progress = { ...a };
+  for (const [k, e] of Object.entries(b)) {
+    const cur = out[k];
+    if (!cur) {
+      out[k] = e;
+      continue;
+    }
+    const status: Status | undefined =
+      cur.status === "solved" || e.status === "solved" ? "solved" : cur.status ?? e.status;
+    out[k] = {
+      status,
+      starred: cur.starred || e.starred,
+      ts: Math.max(cur.ts ?? 0, e.ts ?? 0),
+    };
+  }
+  return out;
+}
+
+function sanitize(incoming: unknown): Progress {
+  const src =
+    incoming && typeof incoming === "object" && "progress" in (incoming as object)
+      ? (incoming as { progress: unknown }).progress
+      : incoming;
+  const clean: Progress = {};
+  if (src && typeof src === "object") {
+    for (const [k, v] of Object.entries(src as Record<string, unknown>)) {
+      if (!v || typeof v !== "object") continue;
+      const e = v as { status?: unknown; starred?: unknown; ts?: unknown };
+      const entry: ProgressEntry = { ts: typeof e.ts === "number" ? e.ts : Date.now() };
+      if (e.status === "solved" || e.status === "attempted") entry.status = e.status;
+      if (e.starred) entry.starred = true;
+      if (entry.status || entry.starred) clean[k] = entry;
+    }
+  }
+  return clean;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -143,6 +184,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     [username, persistProgress]
   );
 
+  const exportData = useCallback(
+    () =>
+      JSON.stringify(
+        { app: "leetbank", version: 1, username, exportedAt: new Date().toISOString(), progress },
+        null,
+        2
+      ),
+    [username, progress]
+  );
+
+  const importData = useCallback(
+    (text: string, mode: "merge" | "replace") => {
+      try {
+        const clean = sanitize(JSON.parse(text));
+        setProgress((prev) => {
+          const next = mode === "replace" ? clean : mergeProgress(prev, clean);
+          persistProgress(username, next);
+          return next;
+        });
+        return { ok: true, count: Object.keys(clean).length };
+      } catch {
+        return { ok: false, count: 0, error: "Could not read that file" };
+      }
+    },
+    [username, persistProgress]
+  );
+
+  const resetProgress = useCallback(() => {
+    setProgress({});
+    persistProgress(username, {});
+  }, [username, persistProgress]);
+
   const value = useMemo<AppState>(
     () => ({
       ready,
@@ -154,8 +227,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       progress,
       setStatus,
       toggleStar,
+      exportData,
+      importData,
+      resetProgress,
     }),
-    [ready, theme, toggleTheme, username, signIn, signOut, progress, setStatus, toggleStar]
+    [
+      ready,
+      theme,
+      toggleTheme,
+      username,
+      signIn,
+      signOut,
+      progress,
+      setStatus,
+      toggleStar,
+      exportData,
+      importData,
+      resetProgress,
+    ]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
