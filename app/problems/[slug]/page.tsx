@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getProblem, neighbors, allKeys, topicsFor, slugifyCompany } from "@/lib/problems";
 import DifficultyBadge from "@/components/DifficultyBadge";
+import CompanyLogo from "@/components/CompanyLogo";
 import Markdown from "@/components/Markdown";
 import Examples from "@/components/Examples";
 import Solutions from "@/components/Solutions";
@@ -70,8 +71,9 @@ export default function ProblemPage({ params }: { params: { slug: string } }) {
             <Link
               key={c}
               href={`/companies/${c.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`}
-              className="rounded-full bg-elevated px-2.5 py-0.5 text-fg-soft ring-1 ring-inset ring-border transition hover:text-accent-soft"
+              className="inline-flex items-center gap-1.5 rounded-full bg-elevated py-0.5 pl-1 pr-2.5 text-fg-soft ring-1 ring-inset ring-border transition hover:text-accent-soft"
             >
+              <CompanyLogo name={c} size={18} />
               {c}
             </Link>
           ))}

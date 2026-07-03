@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { companyList, companyBySlug, problemsForCompany } from "@/lib/problems";
 import ProblemList from "@/components/ProblemList";
+import CompanyLogo from "@/components/CompanyLogo";
 
 export function generateStaticParams() {
   return companyList.map((c) => ({ slug: c.slug }));
@@ -40,11 +41,14 @@ export default function CompanyPage({ params }: { params: { slug: string } }) {
       </Link>
 
       <header className="mt-4 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-fg sm:text-3xl">{c.name}</h1>
-          <p className="mt-1 text-muted">
-            {c.count} {c.count === 1 ? "problem" : "problems"}
-          </p>
+        <div className="flex items-center gap-4">
+          <CompanyLogo name={c.name} size={56} className="shadow-sm" />
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-fg sm:text-3xl">{c.name}</h1>
+            <p className="mt-1 text-muted">
+              {c.count} {c.count === 1 ? "problem" : "problems"}
+            </p>
+          </div>
         </div>
         <div className="flex gap-2 text-xs">
           <span className="rounded-full bg-easy/10 px-2.5 py-1 font-medium text-easy ring-1 ring-inset ring-easy/30">

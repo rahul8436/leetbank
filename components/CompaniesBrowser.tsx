@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { CompanyInfo } from "@/lib/problems";
+import CompanyLogo from "./CompanyLogo";
 
 export default function CompaniesBrowser({ companies }: { companies: CompanyInfo[] }) {
   const [query, setQuery] = useState("");
@@ -37,17 +38,15 @@ export default function CompaniesBrowser({ companies }: { companies: CompanyInfo
           <Link
             key={c.slug}
             href={`/companies/${c.slug}`}
-            className="group flex items-center justify-between gap-2 rounded-xl border border-border bg-surface/60 px-3.5 py-3 transition hover:border-accent/50 hover:bg-elevated"
+            className="group flex items-center gap-3 rounded-xl border border-border bg-surface/60 px-3 py-3 transition hover:border-accent/50 hover:bg-elevated"
           >
+            <CompanyLogo name={c.name} size={38} />
             <div className="min-w-0">
               <div className="truncate font-medium text-fg group-hover:text-accent-soft">{c.name}</div>
               <div className="text-xs text-muted">
                 {c.count} {c.count === 1 ? "problem" : "problems"}
               </div>
             </div>
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-elevated text-sm font-semibold text-accent-soft">
-              {c.count}
-            </span>
           </Link>
         ))}
       </div>
